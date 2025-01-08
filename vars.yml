@@ -1,7 +1,0 @@
-# vars.yml
-
-zabbix_server_ip: "3.111.67.207"
-zabbix_server_port: "81"
-zabbix_agent_package: "zabbix-agent"
-zabbix_agent_config_file: "/etc/zabbix/zabbix_agentd.conf"
-zabbix_service_name: "zabbix-agent"
