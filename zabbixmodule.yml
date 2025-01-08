@@ -2,12 +2,9 @@
 - name: Install and Configure Zabbix Agent
   hosts: all
   become: true
-  vars:
-    zabbix_server_ip: "3.111.67.207"
-    zabbix_server_port: "81"
-    zabbix_agent_package: "zabbix-agent"
-    zabbix_agent_config_file: "/etc/zabbix/zabbix_agentd.conf"
-    zabbix_service_name: "zabbix-agent"
+  vars_files:
+    - vars.yml  # Include the variables from the vars.yml file
+
   tasks:
 
     - name: Update apt repositories
@@ -46,3 +43,9 @@
     - name: Output Zabbix Agent status
       debug:
         msg: "Zabbix Agent is running: {{ zabbix_agent_status.status }}"
+
+    - name: Restart Zabbix Agent service
+      systemd:
+        name: "{{ zabbix_service_name }}"
+        state: restarted
+
