@@ -10,7 +10,7 @@
     - name: zabbix_server_port
       prompt: "Enter the Zabbix Server Port"
       private: no  # Allows port to show when typing
-      default: 10051
+      default: 10051  # Default port
 
   tasks:
     - name: Update apt repositories
