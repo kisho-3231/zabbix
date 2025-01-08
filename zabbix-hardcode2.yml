@@ -1,0 +1,60 @@
+---
+- name: Install and Configure Zabbix Agent
+  hosts: all
+  become: true
+  vars_prompt:
+    - name: zabbix_server_ip
+      prompt: "Enter the Zabbix Server IP"
+      private: no  # Allows IP to show when typing
+
+    - name: zabbix_server_port
+      prompt: "Enter the Zabbix Server Port"
+      private: no  # Allows port to show when typing
+      default: 10051
+
+  tasks:
+    - name: Update apt repositories
+      apt:
+        update_cache: yes
+
+    - name: Install Zabbix Agent
+      apt:
+        name: "zabbix-agent"
+        state: present
+
+    - name: Debugging: Show variables
+      debug:
+        msg: "Server IP: {{ zabbix_server_ip }}, Server Port: {{ zabbix_server_port }}"
+
+    - name: Configure Zabbix Agent to connect to the Zabbix Server
+      lineinfile:
+        path: "/etc/zabbix/zabbix_agentd.conf"
+        regexp: '^Server='
+        line: "Server={{ zabbix_server_ip }}"
+
+    - name: Configure Zabbix Agent active mode
+      lineinfile:
+        path: "/etc/zabbix/zabbix_agentd.conf"
+        regexp: '^ServerActive='
+        line: "ServerActive={{ zabbix_server_ip }}:{{ zabbix_server_port }}"
+
+    - name: Start and enable Zabbix Agent service
+      systemd:
+        name: "zabbix-agent"
+        state: started
+        enabled: true
+
+    - name: Debugging: Check service status
+      systemd:
+        name: "zabbix-agent"
+        state: started
+      register: service_status
+
+    - name: Output service status
+      debug:
+        msg: "Service Status: {{ service_status.status }}"
+
+    - name: Restart Zabbix Agent service
+      systemd:
+        name: "zabbix-agent"
+        state: restarted
