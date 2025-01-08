@@ -2,37 +2,50 @@
 - name: Install and Configure Zabbix Agent
   hosts: all
   become: true
+  vars_files:
+    - vars.yml  # Include the variables from the vars.yml file
+  vars_prompt:
+    - name: "zabbix_server_ip"
+      prompt: "Enter Zabbix Server IP"
+      private: no  # Set to yes if you want to hide the input (for passwords)
+      default: "3.111.67.207"  # Optional: set a default IP
+    - name: "zabbix_server_port"
+      prompt: "Enter Zabbix Server Port"
+      private: no  # Set to yes if you want to hide the input
+      default: "81"  # Optional: set a default port
+
   tasks:
+
     - name: Update apt repositories
       apt:
         update_cache: yes
 
     - name: Install Zabbix Agent
       apt:
-        name: "zabbix-agent"
+        name: "{{ zabbix_agent_package }}"
         state: present
 
     - name: Configure Zabbix Agent to connect to the Zabbix Server
       lineinfile:
-        path: "/etc/zabbix/zabbix_agentd.conf"
+        path: "{{ zabbix_agent_config_file }}"
         regexp: '^Server='
-        line: "Server={{ zabbix_server_ip }}"  # Use the entered Zabbix Server IP
+        line: "Server={{ zabbix_server_ip }}"
 
     - name: Configure Zabbix Agent active mode
       lineinfile:
-        path: "/etc/zabbix/zabbix_agentd.conf"
+        path: "{{ zabbix_agent_config_file }}"
         regexp: '^ServerActive='
-        line: "ServerActive={{ zabbix_server_ip }}:{{ zabbix_server_port }}"  # Use the entered Zabbix Server IP and Port
+        line: "ServerActive={{ zabbix_server_ip }}:{{ zabbix_server_port }}"
 
     - name: Start and enable Zabbix Agent service
       systemd:
-        name: "zabbix-agent"
+        name: "{{ zabbix_service_name }}"
         state: started
         enabled: true
 
     - name: Check Zabbix Agent status
       systemd:
-        name: "zabbix-agent"
+        name: "{{ zabbix_service_name }}"
         state: started
       register: zabbix_agent_status
 
@@ -42,9 +55,10 @@
 
     - name: Restart Zabbix Agent service
       systemd:
-        name: "zabbix-agent"
+        name: "{{ zabbix_service_name }}"
         state: restarted
 
-    - name: Output Zabbix Server IP and Port
+    - name: Output Server IP and Port
       debug:
         msg: "Zabbix Agent is connected to server IP: {{ zabbix_server_ip }} and port: {{ zabbix_server_port }}"
+
