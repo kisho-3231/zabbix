@@ -2,13 +2,9 @@
 - name: Install and Configure Zabbix Agent
   hosts: all
   become: yes
-  vars_prompt:
-    - name: "zabbix_server"
-      prompt: "Enter the Zabbix server IP address"
-      private: no
-    - name: "zabbix_server_active"
-      prompt: "Enter the Zabbix server active IP and port (format: IP:PORT)"
-      private: no
+  vars:
+    zabbix_server: "{{ zabbix_server }}"
+    zabbix_server_active: "{{ zabbix_server_active }}"
 
   tasks:
     - name: Update apt repository and install zabbix-agent
